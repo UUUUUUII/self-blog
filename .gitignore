@@ -1,0 +1,44 @@
+# 依赖目录
+node_modules/
+.pnpm-debug.log
+
+# VitePress 构建输出
+.vitepress/dist/
+.vitepress/cache/
+
+# 开发缓存
+.temp/
+.cache/
+
+# 环境变量
+.env
+.env.*
+!.env.example
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# IDE 配置
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# 日志文件
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# 测试相关
+coverage/
+.nyc_output/
+
+# 包管理器锁文件
+package-lock.json
+yarn.lock
