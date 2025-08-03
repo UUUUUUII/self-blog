@@ -4,18 +4,45 @@ import { VitePressSidebarOptions } from "vitepress-sidebar/types";
 
 const vitePressOptions: UserConfig = {
   srcDir: "./document",
-  title: "个人记录Blog",
-  description: "自我记录，自我学习",
+  title: "笔记-Notes",
+  description: "自我记录",
   // head: [["link", { rel: "icon", href: "/favicon.ico" }]],
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     nav: [
-      { text: "Home", link: "/" },
-      { text: "Examples", link: "/markdown-examples" },
+      { text: "主页", link: "/" },
+      {
+        text: "总览",
+        link: "/document-markdown",
+      },
+      {
+        text: "快速导航",
+        items: [
+          {
+            text: "面试题",
+            items: [
+              { text: "1-100", link: "/javascript/JavaScript_learn1" },
+              { text: "100-200", link: "/javascript/JavaScript_learn2" },
+              { text: "200-201", link: "/javascript/JavaScript_learn3" },
+            ],
+          },
+          {
+            text: "个人记录",
+            items: [
+              { text: "日常", link: "/self/lc" },
+              { text: "自我", link: "/self/js-record" },
+            ],
+          },
+          {
+            text: "Three.js",
+            items: [
+              { text: "日常", link: "/three/helper-fn" },
+            ],
+          },
+        ],
+      },
     ],
-    socialLinks: [
-      { icon: "github", link: "" },
-    ],
+    socialLinks: [{ icon: "github", link: "" }],
     logo: "/public/logo.svg",
     // lastUpdated: {
     //   text: "Updated at",
@@ -41,6 +68,27 @@ const vitePressOptions: UserConfig = {
     // 搜索
     search: {
       provider: "local",
+      options: {
+        locales: {
+          root: {
+            translations: {
+              button: {
+                buttonText: "搜索文档",
+                buttonAriaLabel: "搜索文档",
+              },
+              modal: {
+                noResultsText: "无法找到相关结果",
+                resetButtonTitle: "清除查询条件",
+                footer: {
+                  selectText: "选择",
+                  navigateText: "切换",
+                  close:"关闭"
+                },
+              },
+            },
+          },
+        },
+      },
     },
     // 页脚
     footer: {

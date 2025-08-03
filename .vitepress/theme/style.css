@@ -103,7 +103,7 @@
     #bd34fe 50%,
     #47caff 50%
   ); */
-    --vp-home-hero-name-background: -webkit-linear-gradient(
+  --vp-home-hero-name-background: -webkit-linear-gradient(
     120deg,
     #7f5a83 30%,
     #0d324d
@@ -149,3 +149,15 @@
   --docsearch-primary-color: var(--vp-c-brand-1) !important;
 }
 
+.box > .VPImage {
+  background-color: var(--vp-c-default-soft);
+  border-radius: 6px;
+  justify-content: center;
+  align-items: center;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 20px;
+  font-size: 24px;
+  transition: background-color 0.25s;
+  padding: 8px;
+}
