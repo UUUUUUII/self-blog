@@ -3,6 +3,7 @@ import { withSidebar } from "vitepress-sidebar";
 import { VitePressSidebarOptions } from "vitepress-sidebar/types";
 
 const vitePressOptions: UserConfig = {
+  base:"/self-blog/",
   srcDir: "./document",
   title: "笔记-Notes",
   description: "自我记录",
