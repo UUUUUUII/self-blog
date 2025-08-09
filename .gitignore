@@ -40,5 +40,5 @@ coverage/
 .nyc_output/
 
 # 包管理器锁文件
-package-lock.json
+# package-lock.json
 yarn.lock
