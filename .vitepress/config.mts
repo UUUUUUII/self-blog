@@ -6,44 +6,57 @@ const vitePressOptions: UserConfig = {
   srcDir: "./document",
   title: "笔记-Notes",
   description: "自我记录",
-  // head: [["link", { rel: "icon", href: "/favicon.ico" }]],
+  head: [["link", { rel: "shortcut icon", href: "/logo.svg" }]],
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     nav: [
       { text: "主页", link: "/" },
       {
-        text: "总览",
-        link: "/document-markdown",
-      },
-      {
         text: "快速导航",
         items: [
           {
-            text: "面试题",
+            text: "Front End",
             items: [
-              { text: "1-100", link: "/javascript/JavaScript_learn1" },
-              { text: "100-200", link: "/javascript/JavaScript_learn2" },
-              { text: "200-201", link: "/javascript/JavaScript_learn3" },
-            ],
-          },
-          {
-            text: "个人记录",
-            items: [
-              { text: "日常", link: "/self/lc" },
-              { text: "自我", link: "/self/js-record" },
+              {
+                text: "面试题1",
+                link: "/frontEnd/interviewQuestions/JavaScript_learn1",
+              },
+              {
+                text: "面试题1",
+                link: "/frontEnd/interviewQuestions/JavaScript_learn2",
+              },
+              {
+                text: "面试题3",
+                link: "/frontEnd/interviewQuestions/JavaScript_learn3",
+              },
+              {
+                text: "工具函数",
+                link: "/frontEnd/javascript/utils-fn",
+              },
+              {
+                text: "算法",
+                link: "/frontEnd/javascript/algorithm",
+              },
             ],
           },
           {
             text: "Three.js",
+            items: [{ text: "辅助函数", link: "/three/helperFuns/helper-fn" }],
+          },
+          {
+            text: "个人记录",
             items: [
-              { text: "日常", link: "/three/helper-fn" },
+              { text: "自我", link: "/self/dailyJS/daily-lc" },
+              { text: "日常", link: "/self/dailyJS/daily-record" },
+              { text: "有趣的知识", link: "/self/dailyJS/interesting" },
             ],
           },
         ],
       },
     ],
     socialLinks: [{ icon: "github", link: "" }],
-    logo: "/public/logo.svg",
+    // logo: "/logo.svg",
+    logo: { src: "/logo.svg", width: 24, height: 24 },
     // lastUpdated: {
     //   text: "Updated at",
     //   formatOptions: {
@@ -82,7 +95,7 @@ const vitePressOptions: UserConfig = {
                 footer: {
                   selectText: "选择",
                   navigateText: "切换",
-                  close:"关闭"
+                  close: "关闭",
                 },
               },
             },
@@ -91,23 +104,44 @@ const vitePressOptions: UserConfig = {
       },
     },
     // 页脚
-    footer: {
-      message: "xxx",
-      copyright: "xxxxxxx",
-    },
+    // footer: {
+    //   message: "xxx",
+    //   copyright: "xxxxxxx",
+    // },
   },
 };
 
 const vitePressSidebarOptions:
   | VitePressSidebarOptions
-  | VitePressSidebarOptions[] = {
-  // VitePress Sidebar's options here...
-  documentRootPath: "./document",
-  collapsed: false,
-  capitalizeFirst: true,
-  useTitleFromFrontmatter: true,
-  useFolderTitleFromIndexFile: true,
-};
+  | VitePressSidebarOptions[] = [
+  {
+    documentRootPath: "./document",
+    collapsed: false,
+    capitalizeFirst: true,
+    useTitleFromFrontmatter: true,
+    useFolderTitleFromIndexFile: true,
+    scanStartPath: "frontEnd",
+    resolvePath: "/frontEnd/",
+  },
+  {
+    documentRootPath: "./document",
+    collapsed: false,
+    capitalizeFirst: true,
+    useTitleFromFrontmatter: true,
+    useFolderTitleFromIndexFile: true,
+    scanStartPath: "three",
+    resolvePath: "/three/",
+  },
+  {
+    documentRootPath: "./document",
+    collapsed: false,
+    capitalizeFirst: true,
+    useTitleFromFrontmatter: true,
+    useFolderTitleFromIndexFile: true,
+    scanStartPath: "self",
+    resolvePath: "/self/",
+  },
+];
 // console.log(withSidebar(vitePressOptions, vitePressSidebarOptions))
 export default defineConfig(
   withSidebar(vitePressOptions, vitePressSidebarOptions)

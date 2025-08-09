@@ -1,8 +1,8 @@
 ---
-title: 对比模型
+title: Three & R3F常用函数
 ---
 
-## 在 Three.js 和 R3F 环境下比较两个模型的距离函数
+## 1.在 Three.js 和 R3F 环境下比较两个模型的距离函数
 ### 代码示例
 ```javascript
 import { useRef, useEffect } from "react";
@@ -640,7 +640,235 @@ export default useDisplayModelHelper;
 其中的线以及箭头，描边都是通过这个函数完成的
 
 - 整体
-![full.png](/full.png "整体")
+![full.png](/images/full.png "整体")
 
 - 放大
-![full.png](/part.png "聚焦")
+![full.png](/images/part.png "聚焦")
+
+
+## 2.在 Three.js 中
+当动态的添加模型，就无法添加模型点击事件，故封装hooks函数用来模拟识别点击的模型以及点击事件回调
+### 代码示例
+```javascript
+import { useThree } from "@react-three/fiber";
+import { Vector2, Raycaster } from "three";
+import { useRef, useEffect, useCallback, useMemo } from "react";
+import * as THREE from "three";
+
+/**
+ * @description 用户返回点击模型后返回触发的事件
+ * @param {{
+ *  maxDistance?: number,
+ *  modelFilter?: (object: THREE.Object3D) => THREE.Object3D,
+ *  eventThrottle?: number,
+ *  disable?: boolean,
+ *  onClick?: (event: { type: 'single' | 'double', object: THREE.Object3D | null }) => void,
+ *  doubleClickInterval?: number
+ * }} options
+ */
+const useRaycastClosest = (options = {}) => {
+  const { camera, scene, size } = useThree();
+  const raycaster = useRef(new Raycaster());
+  const mouse = useRef(new Vector2());// 点击的坐标
+  const lastClickTime = useRef(0);// 用于判断双击的时间戳
+  const clickTimeout = useRef(null);// 用于判断双击的Timeout
+  const lastCall = useRef(0);// 用于节流
+  // 记录按下的点，用于判断单击双击且用户没有移动鼠标
+  const dragState = useRef({
+    startX: 0,
+    startY: 0,
+  });
+  /**
+   * @description 
+   * 检测固定Node THREE.Object3D 下的物体，减少检测层级，优化性能
+   */
+  const baseSceneChildren = useMemo(() => {
+    const baseSceneIndex = scene.children.length - 1;
+    const baseScene = scene.children[baseSceneIndex] || scene;
+    return baseScene.children;
+  }, [scene]);
+  /**
+   * @description
+   * 用于获取点击的是那个模型
+   */
+  const getIntersectedObject = useCallback(
+    (event) => {
+      const now = Date.now();
+      //节流：点击的时间间隔小于某个值不触发
+      if (now - lastCall.current < (options.eventThrottle ?? 100)) return null;
+      const { width, height } = size;
+      const rect = event.target.getBoundingClientRect();
+      /**
+       * @description
+       * 浏览器的坐标为左上角为原点，跟WebGL有差别，所以需要计算转化 ： 
+       * mouse.current.x （（当前的点击位置clientX - canvas距离左边的位置）/ canvas的宽度 ） 获取到点击X Axis的百分比位置（0~1） * 2 -1  轴映射到 [-1, 1] 
+       * mouse.current.y  y 要取负值，因为 WebGL 向上为正，和 HTML 坐标系相反:
+       *  -（（当前的点击位置clientY - canvas距离上边的位置）/ canvas的高度） 获取到点击Y Axis的百分比位置（0~1） * 2 + 1  轴映射到 [-1, 1]
+       * 这样即可得到 以canvas的中心为原点的坐标轴转化
+       * @example
+       * 比如 Canvas 全屏，即left=0 top=0 ，浏览器宽度1000 高度500  clientX = 600  clientY = 400
+       * mouse.current.x = （（ 600 - 0 ）/ 1000 ）* 2 - 1 = 0.2
+       * mouse.current.y = -（（ 400 - 0 ）/ 500 ）* 2 + 1 = -0.6
+       * 点击的位置在 以canvas的中心为原点的坐标轴的右下角区域第四象限
+       */
+      mouse.current.x = ((event.clientX - rect.left) / width) * 2 - 1; 
+      mouse.current.y = -((event.clientY - rect.top) / height) * 2 + 1;
+      raycaster.current.setFromCamera(mouse.current, camera);
+      const intersects = raycaster.current.intersectObjects(
+        baseSceneChildren,
+        true
+      );
+      //根据判断找到最近的模型并返回
+      for (let index = 0; index < intersects.length; index++) {
+        const validDistance =
+          intersects[index].distance < (options?.maxDistance ?? Infinity);
+        const validObject = options?.modelFilter(intersects[index].object);
+        if (validDistance && validObject) return validObject;
+      }
+      return null;
+    },
+    [camera, baseSceneChildren, size, options]
+  );
+
+  const getWorldPosition = useCallback(
+    (event) => {
+      // 标准化鼠标坐标
+      const mouse = new THREE.Vector2(
+        (event.clientX / size.width) * 2 - 1,
+        -(event.clientY / size.height) * 2 + 1
+      );
+
+      // const raycaster = new THREE.Raycaster();
+      raycaster.current.setFromCamera(mouse, camera);
+
+      // 用一个平面来接射线（假设是水平地面，Y=0）
+      const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+      const intersection = new THREE.Vector3();
+      raycaster.current.ray.intersectPlane(plane, intersection);
+
+      return intersection;
+    },
+    [camera, size]
+  );
+  /**
+   * @description
+   * 监听 "click", "pointerdown" 事件并作处理
+   */
+  const handleClick = useCallback(
+    (event) => {
+      if (options.disable) return;
+      //鼠标按下记录下当前的 clientX clientY
+      if (event.type === "pointerdown") {
+        dragState.current = {
+          startX: event.clientX,
+          startY: event.clientY,
+        };
+        return null;
+      }
+      //鼠标pointerup 这里用click是因为pointerup的触发实际跟理想不符合，使用click模拟pointerup
+      if (event.type === "click") {
+        const { clientX, clientY } = event;
+        const { startX, startY } = dragState.current;
+        /**
+         * @description
+         * 如果 在pointerdown得到的 clientX clientY 与当前的 "click" 的clientX clientY 不相等；
+         * 就代表用户触发 "pointerdown" 后一直长按 没松手，说明用户是在旋转场景，这个时候我们就不触发。
+         * ~~ 相当于 Math.floor(number) 舍弃小数，向下取整。
+         */
+        if (~~clientX !== ~~startX || ~~clientY !== ~~startY) {
+          return null;
+        }
+      }
+      const currentObject = getIntersectedObject(event);
+      const worldPos = getWorldPosition(event);
+      const now = Date.now();
+      const doubleClickInterval = options.doubleClickInterval ?? 300;// 双击的间隔时间
+      // 触发传入的回掉函数 并返回指定的数据 以及类型
+      if (now - lastClickTime.current < doubleClickInterval) {
+        clearTimeout(clickTimeout.current);
+        options.onClick?.({
+          type: "double",
+          object: currentObject,
+          mouseClient: {
+            clientX: dragState.current.startX,
+            clientY: dragState.current.startY,
+          },
+          worldPos: worldPos,
+        });
+      } else {
+        clickTimeout.current = setTimeout(() => {
+          options.onClick?.({
+            type: "single",
+            object: currentObject,
+            mouseClient: {
+              clientX: dragState.current.startX,
+              clientY: dragState.current.startY,
+            },
+            worldPos: worldPos,
+          });
+        }, doubleClickInterval);
+      }
+
+      lastClickTime.current = now;
+    },
+    [options, getIntersectedObject]
+  );
+
+  /**
+   * @description
+   * 注册 监听 "click", "pointerdown" 事件的触发
+   */
+  useEffect(() => {
+    const canvas = document.querySelector("canvas");
+    if (!canvas || options.disable) return;
+    const eventTypes = ["click", "pointerdown"];
+    eventTypes.forEach((type) => {
+      canvas.addEventListener(type, handleClick);
+    });
+    // 在副作用函数里面清除监听，防止内存泄漏，影响性能
+    return () => {
+      eventTypes.forEach((type) => {
+        canvas.removeEventListener(type, handleClick);
+      });
+    };
+  }, [handleClick, options]);
+
+  return null;
+};
+
+export default useRaycastClosest;
+
+```
+
+### 如何使用
+在当前页面代码的顶层使用即可
+
+```javascript
+  /**
+   * @description
+   * 射线检测
+   */
+  useRaycastClosest({
+    maxDistance: 50,
+    scene: "",//THREE.js 中的 scene 数据（json）
+    //添加自己的过滤条件
+    modelFilter: (obj) => {
+      const _filterData = (data) => {
+        if (!data) return null;
+      };
+      const data = _filterData(obj);
+      return data;
+    },
+    // type: 单击|双击 ；object ： 点击的模型  ；worldPos ：点击的世界坐标THREE.Vector3
+    onClick: ({ type, object, worldPos }) => {
+      console.log(`${type} event:`, object?.name);
+      if (!object) return;
+      //双击
+      if (type === "double") {
+      }
+      //单击
+      if (type === "single") {
+      }
+    },
+  });
+```

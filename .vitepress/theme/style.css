@@ -68,13 +68,8 @@
   --vp-c-danger-2: var(--vp-c-red-2);
   --vp-c-danger-3: var(--vp-c-red-3);
   --vp-c-danger-soft: var(--vp-c-red-soft);
-}
 
-/**
- * Component: Button
- * -------------------------------------------------------------------------- */
-
-:root {
+  
   --vp-button-brand-border: transparent;
   --vp-button-brand-text: var(--vp-c-white);
   --vp-button-brand-bg: var(--vp-c-brand-3);
@@ -84,25 +79,14 @@
   --vp-button-brand-active-border: transparent;
   --vp-button-brand-active-text: var(--vp-c-white);
   --vp-button-brand-active-bg: var(--vp-c-brand-1);
-}
+  
+  --vp-custom-block-tip-border: transparent;
+  --vp-custom-block-tip-text: var(--vp-c-text-1);
+  --vp-custom-block-tip-bg: var(--vp-c-brand-soft);
+  --vp-custom-block-tip-code-bg: var(--vp-c-brand-soft);
 
-/**
- * Component: Home
- * -------------------------------------------------------------------------- */
-
-:root {
+  
   --vp-home-hero-name-color: transparent;
-  /* --vp-home-hero-name-background: -webkit-linear-gradient(
-    120deg,
-    #bd34fe 30%,
-    #41d1ff
-  );
-
-  --vp-home-hero-image-background-image: linear-gradient(
-    -45deg,
-    #bd34fe 50%,
-    #47caff 50%
-  ); */
   --vp-home-hero-name-background: -webkit-linear-gradient(
     120deg,
     #7f5a83 30%,
@@ -131,17 +115,6 @@
 }
 
 /**
- * Component: Custom Block
- * -------------------------------------------------------------------------- */
-
-:root {
-  --vp-custom-block-tip-border: transparent;
-  --vp-custom-block-tip-text: var(--vp-c-text-1);
-  --vp-custom-block-tip-bg: var(--vp-c-brand-soft);
-  --vp-custom-block-tip-code-bg: var(--vp-c-brand-soft);
-}
-
-/**
  * Component: Algolia
  * -------------------------------------------------------------------------- */
 
@@ -149,15 +122,3 @@
   --docsearch-primary-color: var(--vp-c-brand-1) !important;
 }
 
-.box > .VPImage {
-  background-color: var(--vp-c-default-soft);
-  border-radius: 6px;
-  justify-content: center;
-  align-items: center;
-  width: 48px;
-  height: 48px;
-  margin-bottom: 20px;
-  font-size: 24px;
-  transition: background-color 0.25s;
-  padding: 8px;
-}

@@ -1,0 +1,19 @@
+.group:has([role="button"]) .VPSidebarItem.level-0 .items {
+  padding-left: 16px !important;
+  border-left: 1px solid var(--vp-c-divider);
+  border-radius: 2px;
+  transition: background-color 0.25s;
+}
+
+.box > .VPImage {
+  background-color: var(--vp-c-default-soft);
+  border-radius: 6px;
+  justify-content: center;
+  align-items: center;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 20px;
+  font-size: 24px;
+  transition: background-color 0.25s;
+  padding: 8px;
+}

@@ -1,26 +1,36 @@
 ---
 title: 日常记录
 ---
+
 ## 1、静态资源挂了，怎么处理
 
-```
+```js
 // 监听所有静态资源加载错误（需在事件捕获阶段触发）
-window.addEventListener('error', (event) => {
-  const target = event.target;
-  // 过滤非资源错误（如JS报错）
-  if (target && (target.tagName === 'IMG' || target.tagName === 'SCRIPT' || target.tagName === 'LINK')) {
-    const url = target.src || target.href; // 获取失败资源地址
-    console.error('资源加载失败:', url);
-    // 上报错误到监控系统
-    reportError({ type: 'RESOURCE_ERROR', url });
-  }
-}, true); // 关键：使用捕获阶段监听
+window.addEventListener(
+  "error",
+  (event) => {
+    const target = event.target;
+    // 过滤非资源错误（如JS报错）
+    if (
+      target &&
+      (target.tagName === "IMG" ||
+        target.tagName === "SCRIPT" ||
+        target.tagName === "LINK")
+    ) {
+      const url = target.src || target.href; // 获取失败资源地址
+      console.error("资源加载失败:", url);
+      // 上报错误到监控系统
+      reportError({ type: "RESOURCE_ERROR", url });
+    }
+  },
+  true
+); // 关键：使用捕获阶段监听
 //对动态创建的资源（如异步加载的图片），单独绑定 onerror：
 const img = new Image();
-img.src = '';
+img.src = "";
 img.onerror = () => {
-  console.error('图片加载失败:', img.src);
-  reportError({ type: 'IMAGE_ERROR', url: img.src });
+  console.error("图片加载失败:", img.src);
+  reportError({ type: "IMAGE_ERROR", url: img.src });
 };
 document.body.appendChild(img);
 ```
