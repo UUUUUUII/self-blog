@@ -7,7 +7,16 @@ const vitePressOptions: UserConfig = {
   srcDir: "./document",
   title: "笔记-Notes",
   description: "自我记录",
-  head: [["link", { rel: "icon", href: "/logo.svg", type: "image/svg+xml" }]],
+  head: [
+    [
+      "link",
+      {
+        rel: "icon",
+        href: "./logo.svg",
+        type: "image/svg+xml",
+      },
+    ],
+  ],
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     nav: [
@@ -58,8 +67,7 @@ const vitePressOptions: UserConfig = {
     socialLinks: [
       { icon: "github", link: "https://github.com/UUUUUUII/self-blog" },
     ],
-    // logo: "/logo.svg",
-    logo: { src: "/logo.svg", width: 24, height: 24 },
+    logo: "/logo.svg",
     // lastUpdated: {
     //   text: "Updated at",
     //   formatOptions: {
