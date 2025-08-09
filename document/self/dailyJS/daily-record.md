@@ -205,29 +205,26 @@ document.body.appendChild(img);
 
 ### **8. 浏览器输入 url 后**
 
-```
-1. URL 检测：纠错／补全
-2. DNS
-3. TCP 三次握手（ SSL 握手）
-4．准备请求（请求头： cookie +...）
-5.发送请求（ GET ）
-6.服务器处理请求
-7.服务器响应
-8.浏览器收到响应头
-9.处理响应头（set-cookie、content-type、缓存、状态码、connection:keep-alive）
-10．收响应体
-11．渲染
-。解析（预处理线程，资源加载，资源描述符async defer
-prefetch repload）
-生成DOM树＋CSSOM树
-○样式计算
-○Layout布局
-○layer分层
-○paint绘制
-一主线程结束，可以继续进行后续任务一
--合成线程开始
-○ tiles 分块
-○ 栅格化
-○ draw
-12．四次挥手
-```
+- URL 检测：纠错／补全
+- DNS
+- TCP 三次握手（ SSL 握手）
+- 准备请求（请求头： cookie +...）
+- 发送请求（ GET ）
+- 服务器处理请求
+- 服务器响应
+- 浏览器收到响应头
+- 处理响应头（set-cookie、content-type、缓存、状态码、connection:keep-alive）
+- 收响应体
+- 渲染
+  ○ 解析（预处理线程，资源加载，资源描述符 async defer
+  ○ prefetch repload）
+  ○ 生成 DOM 树＋ CSSOM 树
+  ○ 样式计算
+  ○ Layout 布局
+  ○ layer 分层
+  ○ paint 绘制
+  一主线程结束，可以继续进行后续任务一 -合成线程开始
+  ○ tiles 分块
+  ○ 栅格化
+  ○ draw
+- 四次挥手
