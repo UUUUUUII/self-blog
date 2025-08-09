@@ -25,7 +25,7 @@ features:
       src: /summarize.svg
       container: 
         class: vp-feature-icon
-    title: 总结 (Summarize)
+    title: 总结 (Summary)
     details: 将日常学习、项目片段、函数用法等点滴积累，梳理成清晰、易查的核心要点。告别碎片化，高效掌握关键知识。
   - icon:
       src: /document.svg

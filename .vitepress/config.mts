@@ -3,11 +3,11 @@ import { withSidebar } from "vitepress-sidebar";
 import { VitePressSidebarOptions } from "vitepress-sidebar/types";
 
 const vitePressOptions: UserConfig = {
-  base:"/self-blog/",
+  base: "/self-blog/",
   srcDir: "./document",
   title: "笔记-Notes",
   description: "自我记录",
-  head: [["link", { rel: "shortcut icon", href: "/logo.svg" }]],
+  head: [["link", { rel: "icon", href: "/logo.svg", type: "image/svg+xml" }]],
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     nav: [
@@ -55,7 +55,9 @@ const vitePressOptions: UserConfig = {
         ],
       },
     ],
-    socialLinks: [{ icon: "github", link: "" }],
+    socialLinks: [
+      { icon: "github", link: "https://github.com/UUUUUUII/self-blog" },
+    ],
     // logo: "/logo.svg",
     logo: { src: "/logo.svg", width: 24, height: 24 },
     // lastUpdated: {
