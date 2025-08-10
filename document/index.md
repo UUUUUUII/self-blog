@@ -19,6 +19,9 @@ hero:
     - theme: alt
       text: Three.js
       link: /three
+    - theme: alt
+      text: 搭建你得Blog
+      link: /create-blog-guide
 
 features:
   - icon:
