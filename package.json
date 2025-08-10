@@ -8,5 +8,8 @@
     "build": "vitepress build",
     "preview": "vitepress preview"
   },
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "canvas-confetti": "^1.9.3"
+  }
 }
