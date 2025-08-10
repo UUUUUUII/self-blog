@@ -20,7 +20,7 @@ hero:
       text: Three.js
       link: /three
     - theme: alt
-      text: 搭建你得Blog
+      text: 搭建Blog
       link: /create-blog-guide
 
 features:
