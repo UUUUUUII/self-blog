@@ -104,7 +104,17 @@ proxy_pass http:/xxxxx.cn/;#url最后的/ 把上面匹配到的/dev删除掉
 - sse
     获取文件转换的进度
 
-### 
+## 网络
+物理层 数据链路层 网络层 传输层 会话层 表示层 应用层
 
-### 网络
-物理层 数据链路层 网络 传输 会话 表示 应用
+```
+[SYN] Seq = 0
+[SYN , ACK] Seq = 0 ACK =1
+[ACK] Seq = 1 ACK =1
+```
+
+```
+[FIN, SYN] Seq = 673 ACK=438
+[ACK] Seq = 438 ACK =674
+[FIN , ACK] Seq = 438 ACK =674
+[ACK] Seq = 674 ACK =439

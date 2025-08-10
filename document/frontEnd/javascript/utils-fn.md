@@ -355,3 +355,124 @@ export default function concurrentRequestControl(urlList, maxNum) {
   });
 }
 ```
+
+## 5. 防抖 & 节流
+
+```javascript
+/**
+ * Usage: debounce｜throttle
+ * 
+const yourDebounceFun = useCallback(
+    debounce((arg1,arg2) => {
+        console.log(arg1,arg2);
+        // ... your logic
+    }, 500),
+    []
+);
+const yourThrottleFun = useCallback(
+    throttle((arg1,arg2) => {
+        console.log(arg1,arg2);
+        // ... your logic
+    }, 500),
+    []
+);
+yourDebounceFun(arg1,garg2);
+yourThrottleFun(arg1,garg2);
+ */
+export function debounce(fn, delay) {
+  let timer = null;
+  return function (...args) {
+    if (timer) clearTimeout(timer);
+    timer = setTimeout(() => {
+      fn.apply(this, args);
+    }, delay);
+  };
+}
+
+export function throttle(fn, delay) {
+  let flag = true;
+  return function (...args) {
+    if (!flag) return;
+    flag = false;
+    fn.apply(this, args);
+    setTimeout(() => {
+      flag = true;
+    }, delay);
+  };
+}
+
+// 防抖：最后一次触发后执行
+function debounce(fn, delay) {
+  let timer;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), delay);
+  };
+}
+
+// 节流：固定间隔执行
+function throttle(fn, interval) {
+  let lastTime = 0;
+  return (...args) => {
+    const now = Date.now();
+    if (now - lastTime >= interval) {
+      fn(...args);
+      lastTime = now;
+    }
+  };
+}
+```
+
+## 6. 比较两个对象是否相等
+
+```javascript
+export function isObjectValueEqual(objFirst, objSecond) {
+  if (objFirst === objSecond) return true;
+  let aProps = Object.keys(objFirst || "").length;
+  let bProps = Object.keys(objSecond || "").length;
+  if (aProps !== bProps) return false;
+  for (let prop in objFirst) {
+    if (Object.hasOwn(objSecond, prop)) {
+      if (typeof objFirst[prop] === "object") {
+        if (!isObjectValueEqual(objFirst[prop], objSecond[prop])) return false;
+      } else if (objFirst[prop] !== objSecond[prop]) {
+        return false;
+      }
+    } else {
+      return false;
+    }
+  }
+  return true;
+}
+```
+
+## 7. 深度克隆对象
+
+```javascript
+function deepClone(obj, hash = new WeakMap()) {
+  if (obj === null || typeof obj !== "object") return obj;
+  if (hash.has(obj)) return hash.get(obj); // 解决循环引用
+
+  let clone;
+  switch (true) {
+    case obj instanceof Date:
+      clone = new Date(obj);
+      break;
+    case obj instanceof RegExp:
+      clone = new RegExp(obj);
+      break;
+    case Array.isArray(obj):
+      clone = [];
+      break;
+    default:
+      clone = {};
+  }
+  hash.set(obj, clone); // 缓存已拷贝对象
+  for (const key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      clone[key] = deepClone(obj[key], hash);
+    }
+  }
+  return clone;
+}
+```
