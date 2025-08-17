@@ -3,7 +3,9 @@ title: Three & R3F常用函数
 ---
 
 ## 1.在 Three.js 和 R3F 环境下比较两个模型的距离函数
+
 ### 代码示例
+
 ```javascript
 import { useRef, useEffect } from "react";
 import * as THREE from "three";
@@ -637,18 +639,21 @@ export default useDisplayModelHelper;
 ```
 
 ### 功能示意图
+
 其中的线以及箭头，描边都是通过这个函数完成的
 
 - 整体
-![full.png](/images/full.png "整体")
+  ![full.png](/images/full.png "整体")
 
 - 放大
-![full.png](/images/part.png "聚焦")
-
+  ![full.png](/images/part.png "聚焦")
 
 ## 2.在 Three.js 中
-当动态的添加模型，就无法添加模型点击事件，故封装hooks函数用来模拟识别点击的模型以及点击事件回调
+
+当动态的添加模型，就无法添加模型点击事件，故封装 hooks 函数用来模拟识别点击的模型以及点击事件回调
+
 ### 代码示例
+
 ```javascript
 import { useThree } from "@react-three/fiber";
 import { Vector2, Raycaster } from "three";
@@ -669,17 +674,17 @@ import * as THREE from "three";
 const useRaycastClosest = (options = {}) => {
   const { camera, scene, size } = useThree();
   const raycaster = useRef(new Raycaster());
-  const mouse = useRef(new Vector2());// 点击的坐标
-  const lastClickTime = useRef(0);// 用于判断双击的时间戳
-  const clickTimeout = useRef(null);// 用于判断双击的Timeout
-  const lastCall = useRef(0);// 用于节流
+  const mouse = useRef(new Vector2()); // 点击的坐标
+  const lastClickTime = useRef(0); // 用于判断双击的时间戳
+  const clickTimeout = useRef(null); // 用于判断双击的Timeout
+  const lastCall = useRef(0); // 用于节流
   // 记录按下的点，用于判断单击双击且用户没有移动鼠标
   const dragState = useRef({
     startX: 0,
     startY: 0,
   });
   /**
-   * @description 
+   * @description
    * 检测固定Node THREE.Object3D 下的物体，减少检测层级，优化性能
    */
   const baseSceneChildren = useMemo(() => {
@@ -700,8 +705,8 @@ const useRaycastClosest = (options = {}) => {
       const rect = event.target.getBoundingClientRect();
       /**
        * @description
-       * 浏览器的坐标为左上角为原点，跟WebGL有差别，所以需要计算转化 ： 
-       * mouse.current.x （（当前的点击位置clientX - canvas距离左边的位置）/ canvas的宽度 ） 获取到点击X Axis的百分比位置（0~1） * 2 -1  轴映射到 [-1, 1] 
+       * 浏览器的坐标为左上角为原点，跟WebGL有差别，所以需要计算转化 ：
+       * mouse.current.x （（当前的点击位置clientX - canvas距离左边的位置）/ canvas的宽度 ） 获取到点击X Axis的百分比位置（0~1） * 2 -1  轴映射到 [-1, 1]
        * mouse.current.y  y 要取负值，因为 WebGL 向上为正，和 HTML 坐标系相反:
        *  -（（当前的点击位置clientY - canvas距离上边的位置）/ canvas的高度） 获取到点击Y Axis的百分比位置（0~1） * 2 + 1  轴映射到 [-1, 1]
        * 这样即可得到 以canvas的中心为原点的坐标轴转化
@@ -711,7 +716,7 @@ const useRaycastClosest = (options = {}) => {
        * mouse.current.y = -（（ 400 - 0 ）/ 500 ）* 2 + 1 = -0.6
        * 点击的位置在 以canvas的中心为原点的坐标轴的右下角区域第四象限
        */
-      mouse.current.x = ((event.clientX - rect.left) / width) * 2 - 1; 
+      mouse.current.x = ((event.clientX - rect.left) / width) * 2 - 1;
       mouse.current.y = -((event.clientY - rect.top) / height) * 2 + 1;
       raycaster.current.setFromCamera(mouse.current, camera);
       const intersects = raycaster.current.intersectObjects(
@@ -782,7 +787,7 @@ const useRaycastClosest = (options = {}) => {
       const currentObject = getIntersectedObject(event);
       const worldPos = getWorldPosition(event);
       const now = Date.now();
-      const doubleClickInterval = options.doubleClickInterval ?? 300;// 双击的间隔时间
+      const doubleClickInterval = options.doubleClickInterval ?? 300; // 双击的间隔时间
       // 触发传入的回掉函数 并返回指定的数据 以及类型
       if (now - lastClickTime.current < doubleClickInterval) {
         clearTimeout(clickTimeout.current);
@@ -837,38 +842,323 @@ const useRaycastClosest = (options = {}) => {
 };
 
 export default useRaycastClosest;
-
 ```
 
 ### 如何使用
+
 在当前页面代码的顶层使用即可
 
 ```javascript
-  /**
-   * @description
-   * 射线检测
-   */
-  useRaycastClosest({
-    maxDistance: 50,
-    scene: "",//THREE.js 中的 scene 数据（json）
-    //添加自己的过滤条件
-    modelFilter: (obj) => {
-      const _filterData = (data) => {
-        if (!data) return null;
-      };
-      const data = _filterData(obj);
-      return data;
-    },
-    // type: 单击|双击 ；object ： 点击的模型  ；worldPos ：点击的世界坐标THREE.Vector3
-    onClick: ({ type, object, worldPos }) => {
-      console.log(`${type} event:`, object?.name);
-      if (!object) return;
-      //双击
-      if (type === "double") {
-      }
-      //单击
-      if (type === "single") {
-      }
-    },
-  });
+/**
+ * @description
+ * 射线检测
+ */
+useRaycastClosest({
+  maxDistance: 50,
+  scene: "", //THREE.js 中的 scene 数据（json）
+  //添加自己的过滤条件
+  modelFilter: (obj) => {
+    const _filterData = (data) => {
+      if (!data) return null;
+    };
+    const data = _filterData(obj);
+    return data;
+  },
+  // type: 单击|双击 ；object ： 点击的模型  ；worldPos ：点击的世界坐标THREE.Vector3
+  onClick: ({ type, object, worldPos }) => {
+    console.log(`${type} event:`, object?.name);
+    if (!object) return;
+    //双击
+    if (type === "double") {
+    }
+    //单击
+    if (type === "single") {
+    }
+  },
+});
+```
+
+## 3. 配合 2 触发相机聚焦模型
+
+- 需要使用 gsap 动画库
+
+```javascript
+const { camera } = useThree();
+/**
+ * @description
+ * 单击双击模型处理的事件
+ * @param {THREE.Object3D} model 要处理的模型
+ */
+const handleModelEvent = (model, isUpdateBound = true) => {
+  // e.stopPropagation();
+  if (model) {
+    const box = new THREE.Box3().setFromObject(model);
+    const center = new THREE.Vector3();
+    box.getCenter(center);
+    const size = box.getSize(new THREE.Vector3());
+    const maxDim = Math.max(size.x, size.y, size.z);
+    const targetCameraPos = new THREE.Vector3(
+      center.x,
+      center.y + maxDim,
+      center.z + maxDim * 2
+    );
+    const startQuaternion = camera.quaternion.clone();
+    camera.lookAt(center);
+    const targetQuaternion = camera.quaternion.clone();
+    camera.quaternion.copy(startQuaternion);
+    gsap.to(camera.position, {
+      x: targetCameraPos.x,
+      y: targetCameraPos.y,
+      z: targetCameraPos.z,
+      duration: 1,
+      ease: "power2.inOut",
+    });
+    gsap.to(camera.quaternion, {
+      x: targetQuaternion.x,
+      y: targetQuaternion.y,
+      z: targetQuaternion.z,
+      w: targetQuaternion.w,
+      duration: 1,
+      ease: "power2.inOut",
+      onUpdate: () => {
+        controls?.target.copy(center);
+        controls?.update();
+      },
+    });
+  }
+};
+```
+
+## 4. 实现操作 Undo & Redo 功能
+
+- 根据不同的类型添加不同的功能函数
+
+### 封装统一基类
+
+```javascript
+/**
+ * @class
+ * 此类是所有操作Undo Redo 的基类，所有的Undo Redo的操作都继承此方法，重写部分方法进行操作。
+ * 配合状态管理器中的  useCommandHistoryStore  进行管理 Undo/Redo 的栈。
+ */
+export default class Command {
+  constructor() {
+    this.id = performance.now();
+  }
+  execute() {}
+  undo() {}
+  redo() {
+    this.execute();
+  }
+}
+```
+
+### 统一状态管理器
+
+- 这里使用的是 zustand，也可以 Redux
+
+```javascript
+import { create } from "zustand";
+
+/**
+ * @description
+ * 用来管理undo redo的操作
+ */
+const useCommandHistoryStore = create((set, get) => ({
+  undoStack: [],
+  redoStack: [],
+  maxSteps: 100, //存最大的栈数
+  commandId: 0, // 此用作来检测用户undo redo 变化，可以进行监听
+
+  execute: (command) => {
+    command.execute();
+    set((state) => ({
+      undoStack: [...state.undoStack.slice(-state.maxSteps + 1), command],
+      redoStack: [],
+    }));
+  },
+
+  undo: () => {
+    const { undoStack, redoStack, commandId } = get();
+    if (undoStack.length === 0) return;
+
+    const lastCommand = undoStack[undoStack.length - 1];
+    lastCommand.undo();
+    const timeid =
+      commandId === lastCommand.id ? performance.now() : lastCommand.id;
+
+    set({
+      undoStack: undoStack.slice(0, -1),
+      redoStack: [...redoStack, lastCommand],
+      commandId: timeid,
+    });
+  },
+
+  redo: () => {
+    const { undoStack, redoStack, commandId } = get();
+    if (redoStack.length === 0) return;
+
+    const nextCommand = redoStack[redoStack.length - 1];
+    nextCommand.redo();
+    const timeid =
+      commandId === nextCommand.id ? performance.now() : nextCommand.id;
+    set({
+      undoStack: [...undoStack, nextCommand],
+      redoStack: redoStack.slice(0, -1),
+      commandId: timeid.id,
+    });
+  },
+}));
+
+export default useCommandHistoryStore;
+```
+
+### 增加模型的实现
+
+```javascript
+import Command from "./Command";
+/**
+ * @class 增加模型
+ * 继承Command类，重写constructor() execute() undo() 实现自己的逻辑
+ */
+class SetAddModelCommand extends Command {
+  constructor(object, model) {
+    super();
+    this.object = object;
+    this.model = model;
+  }
+  execute() {
+    this.object.add(this.model);
+  }
+  undo() {
+    this.object.remove(this.model);
+  }
+}
+export default SetAddModelCommand;
+```
+
+### 删除模型的实现
+
+```javascript
+import Command from "./Command";
+/**
+ * @class 删除模型
+ * 继承Command类，重写constructor() execute() undo() 实现自己的逻辑
+ */
+class SetDeleteModelCommand extends Command {
+  constructor(object, model) {
+    super();
+    this.object = object;
+    this.model = model;
+  }
+  execute() {
+    this.object.remove(this.model);
+  }
+  undo() {
+    this.object.add(this.model);
+  }
+}
+export default SetDeleteModelCommand;
+```
+
+### Transform 的实现
+
+```javascript
+import Command from "./Command";
+/**
+ * @class 模型 Transform 变化
+ * 继承Command类，重写constructor() execute() undo() 实现自己的逻辑
+ */
+class SetTransformCommand extends Command {
+  constructor(object, oldState, newState) {
+    super();
+    this.object = object;
+    this.oldState = {
+      position: oldState.position.clone(),
+      rotation: oldState.rotation.clone(),
+      scale: oldState.scale.clone(),
+    };
+    this.newState = {
+      position: newState.position.clone(),
+      rotation: newState.rotation.clone(),
+      scale: newState.scale.clone(),
+    };
+  }
+
+  execute() {
+    this.object.position.copy(this.newState.position);
+    this.object.rotation.copy(this.newState.rotation);
+    this.object.scale.copy(this.newState.scale);
+    this.object.updateMatrixWorld();
+  }
+
+  undo() {
+    this.object.position.copy(this.oldState.position);
+    this.object.rotation.copy(this.oldState.rotation);
+    this.object.scale.copy(this.oldState.scale);
+    this.object.updateMatrixWorld();
+  }
+}
+export default SetTransformCommand;
+```
+
+### 显示隐藏的实现
+
+```javascript
+import Command from "./Command";
+/**
+ * @class 模型的显示隐藏
+ * 继承Command类，重写constructor() execute() undo() 实现自己的逻辑
+ */
+class SetVisableModelCommand extends Command {
+  constructor(object, visible) {
+    super();
+    this.object = object;
+    this.visible = visible;
+  }
+  execute() {
+    this.object.visible = this.visible;
+  }
+  undo() {
+    this.object.visible = !this.visible;
+  }
+}
+export default SetVisableModelCommand;
+```
+
+### 使用示例
+- execute 需要从状态管理器中引入
+- 你想要支持的就需要用封装好的来进行操作，这样既可Undo Redo
+- 想支持其他的也是以此类推
+```javascript
+//增加模型 addModel & parentModel : THREE.Object3D ; parentModel是addModel父级
+execute(new SetAddModelCommand(addModel, parentModel));
+//删除模型 deleteModel & parentModel : THREE.Object3D ;parentModel是deleteModel父级
+execute(new SetDeleteModelCommand(deleteModel, parentModel));
+/**
+*  currentModel ： THREE.Object3D
+*  preTransform ：在移动模型之前记录当前的值 
+*  nextTransform ：移动结束的值
+*    position & scale : THREE.Vector3  
+*    rotation: THREE.Euler
+*  一定要使用clone的值，否者将会错乱
+*  preTransform:{
+*    position: xxx.position.clone(),
+*    rotation: xxx.rotation.clone(),
+*    scale: xxx.scale.clone(),
+*  }
+*  nextTransform:{
+*    position: xxx.position.clone(),
+*    rotation: xxx.rotation.clone(),
+*    scale: xxx.scale.clone(),
+*  }
+ */
+execute(
+  new SetTransformCommand(currentModel, preTransform, nextTransform)
+);
+//设置模型的显示与隐藏
+execute(new SetVisableModelCommand(currentModel, !currentModel.visible));
+
+//直接调用方法undo() redo()
+const { undo, redo } = useCommandHistoryStore();
 ```
