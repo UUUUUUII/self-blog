@@ -32,12 +32,16 @@ const vitePressOptions: UserConfig = {
                 link: "/frontEnd/interviewQuestions/JavaScript_learn1",
               },
               {
-                text: "面试题1",
+                text: "面试题2",
                 link: "/frontEnd/interviewQuestions/JavaScript_learn2",
               },
               {
                 text: "面试题3",
                 link: "/frontEnd/interviewQuestions/JavaScript_learn3",
+              },
+              {
+                text: "面试题4",
+                link: "/frontEnd/interviewQuestions/JavaScript_learn4",
               },
               {
                 text: "工程化",
