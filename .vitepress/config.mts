@@ -28,19 +28,19 @@ const vitePressOptions: UserConfig = {
             text: "Front End",
             items: [
               {
-                text: "面试题1",
+                text: "学习记录1",
                 link: "/frontEnd/interviewQuestions/JavaScript_learn1",
               },
               {
-                text: "面试题2",
+                text: "学习记录2",
                 link: "/frontEnd/interviewQuestions/JavaScript_learn2",
               },
               {
-                text: "面试题3",
+                text: "学习记录3",
                 link: "/frontEnd/interviewQuestions/JavaScript_learn3",
               },
               {
-                text: "面试题4",
+                text: "学习记录4",
                 link: "/frontEnd/interviewQuestions/JavaScript_learn4",
               },
               {
@@ -66,7 +66,7 @@ const vitePressOptions: UserConfig = {
             items: [
               { text: "自我", link: "/self/dailyJS/daily-lc" },
               { text: "日常", link: "/self/dailyJS/daily-record" },
-              { text: "有趣的知识", link: "/self/dailyJS/interesting" },
+              { text: "特殊知识", link: "/self/dailyJS/interesting" },
             ],
           },
         ],

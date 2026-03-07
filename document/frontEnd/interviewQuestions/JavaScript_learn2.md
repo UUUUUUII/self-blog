@@ -1,5 +1,5 @@
 ---
-title: 面试题2
+title: 学习记录2
 ---
 ## 101. == 隐试转换的原理？是怎么转换的
 JavaScript 的 `==`（宽松相等）会在比较不同类型的值时触发隐式类型转换，其转换规则基于 **ECMAScript 规范** 中的抽象操作 `ToPrimitive` 和 `ToNumber`。

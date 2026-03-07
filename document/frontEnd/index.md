@@ -1,5 +1,3 @@
 ---
-title: 前端
+title: Javascript
 ---
-
-前端相关
