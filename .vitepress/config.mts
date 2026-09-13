@@ -166,6 +166,15 @@ const vitePressSidebarOptions:
     scanStartPath: "self",
     resolvePath: "/self/",
   },
+  {
+    documentRootPath: "./document",
+    collapsed: false,
+    capitalizeFirst: true,
+    useTitleFromFrontmatter: true,
+    useFolderTitleFromIndexFile: true,
+    scanStartPath: "backEnd",
+    resolvePath: "/backEnd/",
+  },
 ];
 // console.log(withSidebar(vitePressOptions, vitePressSidebarOptions))
 export default defineConfig(
