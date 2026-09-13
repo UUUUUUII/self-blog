@@ -73,6 +73,7 @@ const vitePressOptions: UserConfig = {
             text: "后端",
             items: [
               { text: "MySQL", link: "/backEnd/mySQL/use" },
+              { text: "NestJS", link: "/backEnd/nestJS/use" },
             ],
           },
         ],
