@@ -5,7 +5,7 @@ layout: home
 hero:
   name: "笔记-Notes"
   # text: "个人文档"
-  tagline: "Front End | Three"
+  tagline: "个人学习记录"
   image:
     src: /logo.svg
     alt: 背景图片
@@ -14,7 +14,7 @@ hero:
     #   text: 文档目录
     #   link: /classification-summarize
     - theme: alt
-      text: 前端碎片
+      text: 前端
       link: /frontEnd
     - theme: alt
       text: Three.js
@@ -22,6 +22,9 @@ hero:
     - theme: alt
       text: 搭建Blog
       link: /create-blog-guide
+    - theme: alt
+      text: 后端
+      link: /backEnd
 
 features:
   - icon:
