@@ -69,6 +69,12 @@ const vitePressOptions: UserConfig = {
               { text: "特殊知识", link: "/self/dailyJS/interesting" },
             ],
           },
+          {
+            text: "后端",
+            items: [
+              { text: "MySQL", link: "/backEnd/mySQL/index" },
+            ],
+          },
         ],
       },
     ],
