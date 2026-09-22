@@ -112,7 +112,7 @@ console.log(Object.getPrototypeOf(a) === Number.prototype); // true
 **关键点**：JavaScript 对原始值的属性访问会进行**自动装箱（autoboxing）**，临时将其转换为对应的包装对象，然后在包装对象的原型链上进行属性查找。
 
 ## 406 TS interface type 
-### 相同点
+**相同点**
 1. **都可以定义对象类型** - 描述对象的形状和结构
 2. **都支持函数类型** - 定义函数的参数和返回值类型
 3. **都支持扩展** - 可以通过继承或交叉类型进行组合
@@ -121,7 +121,7 @@ console.log(Object.getPrototypeOf(a) === Number.prototype); // true
 6. **都支持只读修饰符** - 使用 `readonly` 关键字
 7. **在大多数情况下可以互换使用** - 对于对象类型定义功能相似
 
-### 不同点
+**不同点**
 1. **语法不同** - `interface` 使用 `interface` 关键字，`type` 使用 `type` 关键字
 2. **扩展方式** - `interface` 使用 `extends`，`type` 使用 `&`（交叉类型）
 3. **合并声明** - `interface` 支持声明合并，`type` 不支持
