@@ -130,3 +130,56 @@ console.log(Object.getPrototypeOf(a) === Number.prototype); // true
 6. **性能考虑** - `interface` 在大型项目中可能有更好的性能表现
 7. **错误信息** - 使用 `interface` 时错误信息可能更友好
 8. **递归引用** - `type` 在递归类型定义中更灵活
+
+## 407. 变量提升与 this
+```javascript
+var a = 1;
+(function () {
+  console.log(a + this.a);
+  var a = "2";
+  console.log(a + this.a);
+})();
+```
+
+## 408. JavaScript 事件循环
+```javascript
+setTimeout(function () {
+  console.log(1);
+}, 0);
+
+new Promise(function executor(resolve) {
+  console.log(2);
+
+  for (var i = 0; i < 10000; i++) {
+    if (i === 9999) resolve();
+  }
+
+  console.log(3);
+}).then(function () {
+  console.log(4);
+});
+
+console.log(5);
+// 输出：2、3、5、4、1
+```
+
+## 409. 不能使用箭头函数的场景
+以下场景通常不能使用箭头函数：
+
+- 需要动态 `this` 的对象方法或原型方法
+- 需要通过 `this` 访问当前 DOM 元素的事件处理器
+- 需要使用 `arguments` 对象的函数
+- 构造函数
+- 需要使用 `yield` 的生成器函数
+
+## 410. 生成器函数
+```javascript
+const generator = function* () {
+  yield 1;
+  yield 2;
+  yield 3;
+};
+
+const nextValue = generator().next();
+console.log(nextValue, [...generator()]);
+```

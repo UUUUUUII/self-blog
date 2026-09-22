@@ -224,3 +224,161 @@ function lengthOfLIS_WithPath(nums) {
 }
 console.log(lengthOfLIS_WithPath([10, 9, 2, 5, 3, 7, 101, 18]));
 ```
+
+## 6. 接雨水
+```javascript
+/**
+ * @param {number[]} height
+ * @return {number}
+ * 给定 n 个非负整数表示每个宽度为 1 的柱子的高度图，计算按此排列的柱子，下雨之后能接多少雨水。
+ */
+function trap(height) {
+  if (height.length === 0) return 0;
+
+  let left = 0;
+  let right = height.length - 1;
+  let leftMax = 0;
+  let rightMax = 0;
+  let water = 0;
+
+  while (left < right) {
+    if (height[left] < height[right]) {
+      // 左边较低，处理左边
+      if (height[left] >= leftMax) {
+        leftMax = height[left];
+      } else {
+        water += leftMax - height[left];
+      }
+      left++;
+    } else {
+      // 右边较低，处理右边
+      if (height[right] >= rightMax) {
+        rightMax = height[right];
+      } else {
+        water += rightMax - height[right];
+      }
+      right--;
+    }
+  }
+
+  return water;
+}
+
+console.log(trap([0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1]));
+```
+
+## 7. 前 K 个高频元素
+```javascript
+// 给你一个整数数组 nums 和一个整数 k，请你返回其中出现频率前 k 高的元素。
+// 可以按任意顺序返回答案。
+function topKFrequent(nums, k) {
+  const freqMap = new Map();
+
+  for (const num of nums) {
+    freqMap.set(num, (freqMap.get(num) || 0) + 1);
+  }
+
+  const buckets = Array.from({ length: nums.length + 1 }, () => []);
+  for (const [num, frequency] of freqMap) {
+    buckets[frequency].push(num);
+  }
+
+  const result = [];
+  for (let i = buckets.length - 1; i >= 0 && result.length < k; i--) {
+    result.push(...buckets[i]);
+  }
+
+  return result.slice(0, k);
+}
+
+console.log(topKFrequent([1, 1, 1, 2, 2, 3, 3], 2));
+```
+
+## 8. 合并区间
+```javascript
+// 以数组 intervals 表示若干个区间的集合，其中单个区间为 [start, end]。
+// 合并所有重叠的区间，并返回一个不重叠的区间数组。
+function merge(intervals) {
+  if (intervals.length <= 1) return intervals;
+
+  intervals.sort((a, b) => a[0] - b[0]);
+  const result = [intervals[0]];
+
+  for (let i = 1; i < intervals.length; i++) {
+    const current = intervals[i];
+    const last = result[result.length - 1];
+
+    if (current[0] <= last[1]) {
+      last[1] = Math.max(last[1], current[1]);
+    } else {
+      result.push(current);
+    }
+  }
+
+  return result;
+}
+
+console.log(
+  merge([
+    [1, 3],
+    [2, 6],
+    [8, 10],
+    [15, 18],
+  ]),
+);
+```
+
+## 9. 单词拆分
+```javascript
+// 给你一个字符串 s 和一个字符串列表 wordDict 作为字典，
+// 判断是否可以利用字典中的单词拼接出 s。字典中的单词可以重复使用。
+function wordBreak(s, wordDict) {
+  const wordSet = new Set(wordDict);
+  const n = s.length;
+
+  // dp[i] 表示 s[0...i - 1] 是否可以被拆分
+  const dp = new Array(n + 1).fill(false);
+  dp[0] = true;
+
+  for (let i = 1; i <= n; i++) {
+    for (let j = 0; j < i; j++) {
+      // 如果前缀可以被拆分，且 s[j...i - 1] 在字典中
+      if (dp[j] && wordSet.has(s.substring(j, i))) {
+        dp[i] = true;
+        break;
+      }
+    }
+  }
+
+  return dp[n];
+}
+
+console.log(wordBreak("catsandog", ["cats", "dog", "sand", "and", "cat"]));
+```
+
+## 12. 数组扁平化
+```javascript
+const arr = [1, 2, [3, 4, 5, [6, 7, 8], 9], 10, [11, 12]];
+
+const flatArray = (array) => {
+  if (Array.isArray(array)) {
+    let result = [];
+
+    for (const element of array) {
+      if (Array.isArray(element)) {
+        result = result.concat(flatArray(element));
+      } else {
+        result.push(element);
+      }
+    }
+
+    return result;
+  }
+
+  return array;
+};
+
+console.log(flatArray(arr));
+console.log(arr.flat(Infinity));
+```
+
