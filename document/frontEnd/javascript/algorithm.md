@@ -356,7 +356,7 @@ function wordBreak(s, wordDict) {
 console.log(wordBreak("catsandog", ["cats", "dog", "sand", "and", "cat"]));
 ```
 
-## 12. 数组扁平化
+## 10. 数组扁平化
 ```javascript
 const arr = [1, 2, [3, 4, 5, [6, 7, 8], 9], 10, [11, 12]];
 
@@ -380,5 +380,148 @@ const flatArray = (array) => {
 
 console.log(flatArray(arr));
 console.log(arr.flat(Infinity));
+```
+
+## 11. 计算数列第 N 个位置的值
+```javascript
+/**
+ * 数列前 M 项为 1 到 M：
+ * - 前 M 项存在重复值时，新值为窗口最大值与最小值之和
+ * - 前 M 项不存在重复值时，新值为窗口最大值与最小值之差
+ *
+ * @param {number} m 窗口大小，3 <= m <= 10
+ * @param {number} n 要计算的位置，1 <= n <= 50
+ * @returns {number}
+ */
+function getSequenceValue(m, n) {
+  if (!Number.isInteger(m) || m < 3 || m > 10) {
+    throw new RangeError("m must be an integer between 3 and 10");
+  }
+  if (!Number.isInteger(n) || n < 1 || n > 50) {
+    throw new RangeError("n must be an integer between 1 and 50");
+  }
+
+  const sequence = Array.from({ length: m }, (_, index) => index + 1);
+
+  for (let position = m; position < n; position++) {
+    const window = sequence.slice(position - m, position);
+    const uniqueValues = new Set(window);
+    const min = Math.min(...window);
+    const max = Math.max(...window);
+    const nextValue = uniqueValues.size < m ? max + min : max - min;
+
+    sequence.push(nextValue);
+  }
+
+  return sequence[n - 1];
+}
+
+console.log(getSequenceValue(5, 1)); // 1
+console.log(getSequenceValue(5, 5)); // 5
+console.log(getSequenceValue(5, 6)); // 4
+console.log(getSequenceValue(5, 7)); // 7
+console.log(getSequenceValue(5, 8)); // 10
+```
+
+## 12. 勇攀数字高峰
+```javascript
+/**
+ * 在数字地图中，从唯一最低点走到唯一最高点，计算所有可行路径的数量。
+ *
+ * 规则：
+ * - 每次只能向上、下、左、右移动
+ * - 下一格的高度必须更高
+ * - 相邻两格的高度差必须大于 0 且不超过 maxDiff
+ *
+ * 坐标格式为 [行号, 列号]，并且从 0 开始计数。
+ * 例如 heights[1][0] 表示第 1 行、第 0 列的高度。
+ *
+ * @param {number[][]} heights 数字地形图
+ * @param {number} maxDiff 单步允许的最大高度差
+ * @returns {number} 可行路径数量
+ */
+function countMountainPaths(heights, maxDiff) {
+  const rows = heights.length;
+  const cols = heights[0].length;
+
+  let start = [0, 0];
+  let peak = [0, 0];
+
+  // 找到最低点和最高点的坐标
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      if (heights[row][col] < heights[start[0]][start[1]]) {
+        start = [row, col];
+      }
+
+      if (heights[row][col] > heights[peak[0]][peak[1]]) {
+        peak = [row, col];
+      }
+    }
+  }
+
+  const directions = [
+    [-1, 0], // 上
+    [1, 0],  // 下
+    [0, -1], // 左
+    [0, 1],  // 右
+  ];
+
+  // memo[row][col] 表示从当前位置到最高点的路径数量
+  const memo = Array.from(
+    { length: rows },
+    () => Array(cols).fill(-1),
+  );
+
+  function dfs(row, col) {
+    // 到达最高点，表示找到一条完整路径
+    if (row === peak[0] && col === peak[1]) {
+      return 1;
+    }
+
+    if (memo[row][col] !== -1) {
+      return memo[row][col];
+    }
+
+    let count = 0;
+
+    for (const [rowOffset, colOffset] of directions) {
+      const nextRow = row + rowOffset;
+      const nextCol = col + colOffset;
+
+      // 越界时不能移动
+      if (
+        nextRow < 0 ||
+        nextRow >= rows ||
+        nextCol < 0 ||
+        nextCol >= cols
+      ) {
+        continue;
+      }
+
+      const heightDiff =
+        heights[nextRow][nextCol] - heights[row][col];
+
+      // 必须严格变高，并且高度差不能超过限制
+      if (heightDiff > 0 && heightDiff <= maxDiff) {
+        count += dfs(nextRow, nextCol);
+      }
+    }
+
+    memo[row][col] = count;
+    return count;
+  }
+
+  return dfs(start[0], start[1]);
+}
+
+console.log(countMountainPaths([[1, 2], [3, 5]], 2));
+// 1，路径：1 -> 3 -> 5
+
+console.log(countMountainPaths([[4, 3], [3, 2]], 1));
+// 2
+
+console.log(countMountainPaths([[1, 3], [3, 4]], 1));
+// 0，1 到 3 的高度差为 2，超过限制
 ```
 
