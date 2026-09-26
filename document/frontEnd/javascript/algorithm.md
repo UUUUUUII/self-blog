@@ -525,3 +525,351 @@ console.log(countMountainPaths([[1, 3], [3, 4]], 1));
 // 0，1 到 3 的高度差为 2，超过限制
 ```
 
+## 13. 准备生日礼物
+```javascript
+/**
+ * 统计指定月份需要准备的生日礼物数量。
+ * 同一员工重复录入时，以最后一次录入的生日为准。
+ *
+ * @param {number} month 要发放礼物的月份，范围为 1 到 12
+ * @param {string[]} employees 员工姓名列表
+ * @param {string[]} birthdays 与员工一一对应的生日列表，格式为 Year/Month/Day
+ * @returns {number} 需要准备的礼物数量
+ */
+function countBirthdayGifts(month, employees, birthdays) {
+  const birthdayMonthByEmployee = new Map();
+
+  for (let i = 0; i < employees.length; i++) {
+    const birthdayMonth = Number(birthdays[i].split("/")[1]);
+    birthdayMonthByEmployee.set(employees[i], birthdayMonth);
+  }
+
+  let count = 0;
+  for (const birthdayMonth of birthdayMonthByEmployee.values()) {
+    if (birthdayMonth === month) {
+      count++;
+    }
+  }
+
+  return count;
+}
+
+console.log(
+  countBirthdayGifts(
+    5,
+    ["Alice", "Bob", "Charlie", "David", "Eve", "Frank", "Grace", "Helen"],
+    ["1985/5/10", "1990/10/11", "1995/10/11", "2000/11/10", "2005/05/01", "2010/10/13", "2015/10/14", "2020/5/2"],
+  ),
+); // 3
+
+console.log(
+  countBirthdayGifts(
+    10,
+    ["Alice", "Bob", "Charlie", "David", "Eve", "Frank", "Grace", "Helen"],
+    ["1985/05/10", "1990/10/11", "1995/10/11", "2000/11/10", "2005/10/13", "2010/10/13", "2015/10/14", "2020/10/15"],
+  ),
+); // 6
+
+console.log(
+  countBirthdayGifts(
+    5,
+    ["Alice", "Bob", "Charlie", "Alice", "Eve", "Frank", "Grace", "Helen"],
+    ["1985/5/10", "1990/10/11", "1995/10/11", "1985/7/10", "2005/05/01", "2010/10/13", "2015/10/14", "2020/5/2"],
+  ),
+); // 2，Alice 最后一次录入的生日月份为 7 月
+```
+
+## 14. 配置操作失败数量统计
+**正则版本**
+```javascript
+function countFailedConfigOperationsWithRegex(input) {
+  const rules = new Map();
+  let failures = 0;
+
+  for (const [, command] of input.matchAll(/\[([^\]]*)\]/g)) {
+    const [operation, ...argumentsList] = command.trim().split(/\s+/);
+    const params = new Map();
+    let valid = true;
+
+    for (const argument of argumentsList) {
+      const separatorIndex = argument.indexOf("=");
+      if (separatorIndex <= 0 || separatorIndex === argument.length - 1) {
+        valid = false;
+        break;
+      }
+
+      const key = argument.slice(0, separatorIndex);
+      const value = argument.slice(separatorIndex + 1);
+      if (
+        (key !== "rule_id" && key !== "rule_index") ||
+        params.has(key) ||
+        !/^\d+$/.test(value)
+      ) {
+        valid = false;
+        break;
+      }
+
+      const number = Number(value);
+      if (number < 1 || number > 9999) {
+        valid = false;
+        break;
+      }
+      params.set(key, number);
+    }
+
+    if (!valid) {
+      failures++;
+      continue;
+    }
+
+    const ruleId = params.get("rule_id");
+    const ruleIndex = params.get("rule_index");
+
+    if (operation === "add_rule") {
+      if (!params.has("rule_id") || !params.has("rule_index") || rules.has(ruleId)) {
+        failures++;
+      } else {
+        rules.set(ruleId, ruleIndex);
+      }
+    } else if (operation === "mod_rule") {
+      if (
+        !params.has("rule_id") ||
+        !params.has("rule_index") ||
+        !rules.has(ruleId) ||
+        rules.get(ruleId) === ruleIndex
+      ) {
+        failures++;
+      } else {
+        rules.set(ruleId, ruleIndex);
+      }
+    } else if (operation === "del_rule") {
+      if (!params.has("rule_id") || !rules.has(ruleId)) {
+        failures++;
+      } else {
+        rules.delete(ruleId);
+      }
+    } else {
+      failures++;
+    }
+  }
+
+  return failures;
+}
+
+console.log(
+  countFailedConfigOperationsWithRegex(
+    "[add_rule rule_id=1 rule_index=9999][mod_rule rule_id=1 rule_index=10][del_rule rule_id=1]",
+  ),
+); // 0
+
+console.log(
+  countFailedConfigOperationsWithRegex(
+    "[add_rule rule_id=1][mod_rule rule_id=1 rule_index=10][del_rule rule_id=1]",
+  ),
+); // 3
+
+console.log(
+  countFailedConfigOperationsWithRegex("[add_rule rule_id=1 rule_index=10000]"),
+); // 1
+```
+
+正则版本用正则提取命令、拆分空白字符并检查数字格式。
+
+**不用正则版本**
+```javascript
+/**
+ * 依次执行批量配置命令，并统计失败次数。
+ *
+ * @param {string} input 格式为 [cmd][cmd]... 的批量命令字符串
+ * @returns {number} 配置操作失败次数
+ */
+function countFailedConfigOperations(input) {
+  const commands = input.replaceAll("[", "").split("]").filter(Boolean);
+  const rules = new Map();
+  let failures = 0;
+
+  for (const command of commands) {
+    const [operation, ...argumentsList] = command.trim().split(" ").filter(Boolean);
+    const params = new Map();
+    let valid = true;
+
+    for (const argument of argumentsList) {
+      const parts = argument.split("=");
+      if (parts.length !== 2) {
+        valid = false;
+        break;
+      }
+
+      const [key, value] = parts;
+      const number = parseRuleValue(value);
+      if (
+        (key !== "rule_id" && key !== "rule_index") ||
+        params.has(key) ||
+        number === null
+      ) {
+        valid = false;
+        break;
+      }
+
+      params.set(key, number);
+    }
+
+    if (!valid) {
+      failures++;
+      continue;
+    }
+
+    const ruleId = params.get("rule_id");
+    const ruleIndex = params.get("rule_index");
+
+    switch (operation) {
+      case "add_rule":
+        if (!params.has("rule_id") || !params.has("rule_index") || rules.has(ruleId)) {
+          failures++;
+        } else {
+          rules.set(ruleId, ruleIndex);
+        }
+        break;
+      case "mod_rule":
+        if (
+          !params.has("rule_id") ||
+          !params.has("rule_index") ||
+          !rules.has(ruleId) ||
+          rules.get(ruleId) === ruleIndex
+        ) {
+          failures++;
+        } else {
+          rules.set(ruleId, ruleIndex);
+        }
+        break;
+      case "del_rule":
+        if (!params.has("rule_id") || !rules.has(ruleId)) {
+          failures++;
+        } else {
+          rules.delete(ruleId);
+        }
+        break;
+      default:
+        failures++;
+    }
+  }
+
+  return failures;
+}
+
+function parseRuleValue(value) {
+  if (!value) return null;
+
+  let number = 0;
+  for (const character of value) {
+    if (character < "0" || character > "9") return null;
+    number = number * 10 + Number(character);
+    if (number > 9999) return null;
+  }
+
+  return number > 0 ? number : null;
+}
+
+console.log(
+  countFailedConfigOperations(
+    "[add_rule rule_id=1 rule_index=9999][mod_rule rule_id=1 rule_index=10][del_rule rule_id=1]",
+  ),
+); // 0
+
+console.log(
+  countFailedConfigOperations(
+    "[add_rule rule_id=1][mod_rule rule_id=1 rule_index=10][del_rule rule_id=1]",
+  ),
+); // 3
+
+console.log(
+  countFailedConfigOperations("[add_rule rule_id=1 rule_index=10000]"),
+); // 1
+```
+
+## 15. 直捣黄龙
+```javascript
+/**
+ * 统计避开哨兵警戒范围后，从入口到司令部的最短路径条数和长度。
+ * 路径长度按经过的格子数计算，包含起点和终点。
+ *
+ * @param {number} n 敌营矩阵边长，n 为大于 1 的奇数且小于 30
+ * @param {{ x: number, y: number }[]} sentries 哨兵位置列表
+ * @returns {[number, number]} [最短路径条数, 最短路径长度]
+ */
+function countShortestSafePaths(n, sentries) {
+  const blocked = Array.from({ length: n }, () => Array(n).fill(false));
+
+  // blocked[x][y] 为 true 表示该位置处在哨兵的警戒范围内，角色不能进入。
+  // 先把所有哨兵的警戒范围合并到同一张矩阵中；多个范围重叠也只需标记一次。
+  for (const { x, y } of sentries) {
+    // x 表示行，y 表示列。范围从哨兵坐标前后各扩展一格。
+    // 使用 Math.max / Math.min 截断边界，避免访问矩阵之外的位置。
+    for (let row = Math.max(0, x - 1); row <= Math.min(n - 1, x + 1); row++) {
+      for (let col = Math.max(0, y - 1); col <= Math.min(n - 1, y + 1); col++) {
+        blocked[row][col] = true;
+      }
+    }
+  }
+
+  const middle = Math.floor(n / 2);
+  // n 是奇数，因此中间列下标为 n / 2（向下取整）。入口和终点位于该列的两端。
+  const start = [0, middle];
+  const destination = [n - 1, middle];
+  // 起点或终点也在任意哨兵的警戒范围内时，角色无法完成任务。
+  if (blocked[start[0]][start[1]] || blocked[destination[0]][destination[1]]) {
+    return [0, 0];
+  }
+
+  // distance[x][y] 保存从入口到该格子的最短路径长度，按经过的格子数计数。
+  // distance 为 0 表示尚未访问；起点长度设为 1，所以结果包含起点和终点。
+  const distance = Array.from({ length: n }, () => Array(n).fill(0));
+  // ways[x][y] 保存所有到达该格子的最短路径条数。
+  const ways = Array.from({ length: n }, () => Array(n).fill(0));
+
+  // BFS 队列按“先近后远”的顺序处理格子；head 代替 shift，避免反复移动数组元素。
+  const queue = [start];
+  // 每次行动只能沿上下左右移动一格，不允许斜向移动。
+  const directions = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+
+  distance[start[0]][start[1]] = 1;
+  // 到达入口只有一种空的起始选择，因此初始路径数为 1。
+  ways[start[0]][start[1]] = 1;
+
+  for (let head = 0; head < queue.length; head++) {
+    const [row, col] = queue[head];
+
+    for (const [rowOffset, colOffset] of directions) {
+      const nextRow = row + rowOffset;
+      const nextCol = col + colOffset;
+
+      // 越界或进入警戒格都不是合法移动，跳过该方向。
+      if (
+        nextRow < 0 || nextRow >= n ||
+        nextCol < 0 || nextCol >= n ||
+        blocked[nextRow][nextCol]
+      ) {
+        continue;
+      }
+
+      const nextDistance = distance[row][col] + 1;
+      // 首次到达该格：BFS 保证这是最短距离，继承当前格的最短路径数并入队。
+      if (distance[nextRow][nextCol] === 0) {
+        distance[nextRow][nextCol] = nextDistance;
+        ways[nextRow][nextCol] = ways[row][col];
+        queue.push([nextRow, nextCol]);
+      // 再次以同样的最短距离到达：发现了另一条最短路径，只累加路径数。
+      } else if (distance[nextRow][nextCol] === nextDistance) {
+        ways[nextRow][nextCol] += ways[row][col];
+      }
+    }
+  }
+
+  // 终点不可达时 distance 和 ways 都仍为 0；否则返回最短路径条数及其格子数。
+  return [ways[destination[0]][destination[1]], distance[destination[0]][destination[1]]];
+}
+
+console.log(countShortestSafePaths(3, [{ x: 1, y: 1 }])); // [0, 0]
+console.log(countShortestSafePaths(5, [{ x: 2, y: 1 }])); // [1, 7]
+console.log(countShortestSafePaths(5, [{ x: 2, y: 2 }])); // [2, 9]
+```
