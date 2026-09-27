@@ -1063,3 +1063,241 @@ console.log(playCatFishing([1, 2, 11, 4], [10, 12, 2, 1])); // 12，甲获胜时
 ```
 
 每个玩家用数组和队首索引表示手牌，出牌只移动索引，收牌则将桌面对应部分追加到当前玩家队尾。桌面从左到右表示从底到顶；普通收牌从最近的同点数牌开始，J 在桌面非空时收走整桌牌。令 `T` 为出牌次数上限、`n` 为每位玩家初始牌数，时间复杂度为 `O(Tn)`，空间复杂度为 `O(T + n)`。
+
+## 19. 8 位 LED 控制器
+```javascript
+/**
+ * 按顺序执行 LED 点亮、熄灭和切换指令，返回最终状态对应的整数。
+ * 每条指令由操作符和 LED 编号组成，例如 L0、D3、T7。
+ *
+ * @param {string} instructions 指令字符串
+ * @returns {number} 8 位 LED 状态对应的整数
+ */
+function controlLeds(instructions) {
+  let state = 0;
+
+  for (let index = 0; index < instructions.length; index += 2) {
+    const operation = instructions[index];
+    const ledIndex = instructions.charCodeAt(index + 1) - "0".charCodeAt(0);
+
+    if (!Number.isInteger(ledIndex) || ledIndex < 0 || ledIndex > 7) {
+      throw new RangeError("LED index must be between 0 and 7");
+    }
+
+    const mask = 1 << ledIndex;
+    switch (operation) {
+      case "L":
+        state |= mask;
+        break;
+      case "D":
+        state &= ~mask;
+        break;
+      case "T":
+        state ^= mask;
+        break;
+      default:
+        throw new TypeError(`Unknown LED operation: ${operation}`);
+    }
+  }
+
+  return state;
+}
+
+console.log(controlLeds("L0L1L2D1")); // 5
+console.log(controlLeds("L0L1L2T1")); // 5
+console.log(controlLeds("L0L1L2L3L4L5L6L7")); // 255
+console.log(controlLeds("")); // 0
+```
+
+`1 << x` 生成第 `x` 位为 1 的掩码。点亮用按位或 `|` 将目标位设为 1；熄灭用按位与 `& ~mask` 将目标位清零；切换用按位异或 `^` 翻转目标位。每条指令只处理一次，时间复杂度为 `O(n)`，额外空间复杂度为 `O(1)`，其中 `n` 为指令字符串长度。
+
+## 20. 分辨率排序
+```javascript
+/**
+ * 按清晰度、像素面积和宽度从大到小排序分辨率。
+ * 清晰度只在宽、高同时达到对应标准时匹配，不交换宽高。
+ *
+ * @param {string} input 空格分隔的“宽x高”字符串
+ * @returns {string} 排序后的分辨率字符串
+ */
+function sortResolutions(input) {
+  const qualityThresholds = [
+    { width: 3840, height: 2160, level: 3 },
+    { width: 2560, height: 1440, level: 2 },
+    { width: 1920, height: 1080, level: 1 },
+  ];
+  const resolytionList = input.split(" ");
+  const res = resolytionList
+    .map((item) => {
+      const [w, h] = item.split("x");
+      const getLevel =
+        qualityThresholds.find(
+          (v) => parseInt(w) >= v.width && parseInt(h) >= v.height,
+        )?.level || 0;
+      return {
+        level: getLevel,
+        value: item,
+        area: parseInt(w) * parseInt(h),
+        w: parseInt(w),
+        h: parseInt(h),
+      };
+    })
+    .sort((a, b) => b.level - a.leveel || b.area - a.area || b.w - a.w);
+  return res.reduce((a, c) => (a = a + " " + c.value), "");
+}
+
+console.log(
+  sortResolutions("3840x2160 3840x2161 3840x1080 2560x1440 1920x1080 1x1"),
+); // 3840x2161 3840x2160 2560x1440 3840x1080 1920x1080 1x1
+
+console.log(sortResolutions("2560x1440 4000x5000 5000x4000"));
+// 5000x4000 4000x5000 2560x1440
+console.log(sortResolutions("2600x1400 2500x3200"));
+// 2500x3200 2600x1400：两者都是 1080P，按面积排序
+```
+
+先判断是否同时达到 4K、2K、1080P 的宽高门槛；都不满足时归入 720P 档。随后按清晰度档位、面积、宽度依次降序比较。时间复杂度为 `O(n log n)`，除排序所需数据外的空间复杂度为 `O(n)`。
+
+## 21. Wi-Fi 网络规划
+```javascript
+/**
+ * 用最少数量的 AP 覆盖所有空地，且任意两个 AP 的 3*3 覆盖区域不能重叠。
+ * AP 只能放在空地上；越过网格边界的覆盖部分不计入网格。
+ *
+ * @param {(string[] | string)[]} inputGrid 由 '.' 和 '#' 组成的矩阵，也支持每行是字符串
+ * @returns {number} 最少 AP 数量；无解或空网格时返回 -1
+ */
+function minWifiAccessPoints(inputGrid) {
+  // 空数组没有任何网格行，按题意作为无效空输入处理。
+  if (!Array.isArray(inputGrid) || inputGrid.length === 0) return -1;
+
+  // 允许两种输入：[['.', '#'], ...] 字符矩阵，或 [".#", ...] 字符串行。
+  // 字符串行转换成字符数组，后续逻辑只处理统一的二维数组格式。
+  const grid = inputGrid.map((row) =>
+    typeof row === "string" ? Array.from(row) : row,
+  );
+  // 转换后每一行都必须是数组，否则无法安全读取行列。
+  if (!grid.every(Array.isArray)) return -1;
+
+  // 网格必须至少有一列，且每一行列数相同，才能使用行列坐标计算格子编号。
+  const rows = grid.length;
+  const cols = grid[0].length;
+  if (cols === 0 || grid.some((row) => row.length !== cols)) return -1;
+  // 只接受空地 '.' 和墙壁 '#' 两种字符。
+  if (grid.some((row) => row.some((cell) => cell !== "." && cell !== "#"))) {
+    return -1;
+  }
+
+  // covered 记录空地是否已经被覆盖；occupied 记录 AP 覆盖区域是否占用该格。
+  // occupied 同时包含墙格，因为 AP 的覆盖区域即使压到墙上也不能与其它 AP 重叠。
+  const covered = Array.from({ length: rows }, () => Array(cols).fill(false));
+  const occupied = Array.from({ length: rows }, () => Array(cols).fill(false));
+  let remaining = 0;
+
+  // 统计需要覆盖的空地总数。
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      if (grid[row][col] === ".") remaining++;
+    }
+  }
+  if (remaining === 0) return 0;
+
+  let best = Infinity;
+
+  function search(remaining, used) {
+    // 所有空地都被覆盖，记录当前方案的 AP 数量。
+    if (remaining === 0) {
+      best = Math.min(best, used);
+      return;
+    }
+
+    // 一个 AP 最多覆盖 9 块空地，用这个下界剪掉不可能优于当前答案的分支。
+    if (used + Math.ceil(remaining / 9) >= best) return;
+
+    // 找到按行优先顺序遇到的第一块未覆盖空地，下一台 AP 必须覆盖它。
+    let targetRow = -1;
+    let targetCol = -1;
+    for (let row = 0; row < rows && targetRow === -1; row++) {
+      for (let col = 0; col < cols; col++) {
+        if (grid[row][col] === "." && !covered[row][col]) {
+          targetRow = row;
+          targetCol = col;
+          break;
+        }
+      }
+    }
+
+    // 任何能覆盖目标空地的 AP，其中心都只能在目标周围一格范围内。
+    for (let apRow = Math.max(0, targetRow - 1); apRow <= Math.min(rows - 1, targetRow + 1); apRow++) {
+      for (let apCol = Math.max(0, targetCol - 1); apCol <= Math.min(cols - 1, targetCol + 1); apCol++) {
+        // AP 只能放在空地上。
+        if (grid[apRow][apCol] !== ".") continue;
+
+        const area = [];
+        let overlaps = false;
+        let newlyCovered = 0;
+
+        // 检查 AP 在网格内的 3*3 区域，同时统计它会新覆盖多少空地。
+        for (let row = Math.max(0, apRow - 1); row <= Math.min(rows - 1, apRow + 1); row++) {
+          for (let col = Math.max(0, apCol - 1); col <= Math.min(cols - 1, apCol + 1); col++) {
+            area.push([row, col]);
+            if (occupied[row][col]) overlaps = true;
+            if (grid[row][col] === "." && !covered[row][col]) newlyCovered++;
+          }
+        }
+
+        // 覆盖区域有任意格已被占用，都代表与之前的 AP 重叠。
+        if (overlaps) continue;
+
+        // 选择该 AP：占用整个区域，并标记区域内的空地已覆盖。
+        for (const [row, col] of area) {
+          occupied[row][col] = true;
+          if (grid[row][col] === ".") covered[row][col] = true;
+        }
+
+        // 递归覆盖剩余空地，AP 数加一。
+        search(remaining - newlyCovered, used + 1);
+
+        // 回溯撤销本次选择，恢复状态供其它候选 AP 使用。
+        for (const [row, col] of area) {
+          occupied[row][col] = false;
+          if (grid[row][col] === ".") covered[row][col] = false;
+        }
+      }
+    }
+  }
+
+  search(remaining, 0);
+  return Number.isFinite(best) ? best : -1;
+}
+
+// 按顺序验证题目中的五个示例。
+console.log(minWifiAccessPoints([
+  [".", ".", ".", "#", ".", ".", "."],
+  [".", ".", ".", "#", ".", ".", "."],
+  [".", ".", ".", "#", ".", ".", "."],
+  [".", ".", ".", "#", ".", ".", "."],
+  [".", ".", ".", "#", ".", ".", "."],
+  [".", ".", ".", "#", ".", ".", "."],
+  [".", ".", ".", "#", ".", ".", "."],
+])); // 6
+
+console.log(minWifiAccessPoints([
+  [".", ".", "#", ".", "."],
+  [".", ".", "#", ".", "."],
+  [".", ".", "#", ".", "."],
+  [".", ".", "#", ".", "."],
+  [".", ".", "#", ".", "."],
+])); // 4
+
+console.log(minWifiAccessPoints([["."], ["."], ["."], ["."], ["."]])); // 2
+console.log(minWifiAccessPoints([[]])); // -1
+console.log(minWifiAccessPoints([
+  [".", "#", ".", "#"],
+  ["#", ".", "#", "."],
+  [".", "#", ".", "#"],
+  ["#", ".", "#", "."],
+])); // -1
+```
+
+`covered` 和 `occupied` 分别记录空地覆盖状态与 AP 区域占用状态。DFS 每次找到第一块未覆盖空地，只尝试其周围可能的 AP 位置；放置后递归，返回时撤销状态。每个 AP 最多覆盖 9 块空地，因此用 `ceil(剩余空地数 / 9)` 做下界剪枝。此版本更直观，但仍是精确回溯，最坏时间复杂度为指数级，大规模复杂布局可能需要较长搜索时间。
