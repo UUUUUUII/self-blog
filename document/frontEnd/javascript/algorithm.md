@@ -873,3 +873,193 @@ console.log(countShortestSafePaths(3, [{ x: 1, y: 1 }])); // [0, 0]
 console.log(countShortestSafePaths(5, [{ x: 2, y: 1 }])); // [1, 7]
 console.log(countShortestSafePaths(5, [{ x: 2, y: 2 }])); // [2, 9]
 ```
+
+## 16. API 请求日志去重分析
+```javascript
+/**
+ * 合并相邻的相同请求路径，并统计每组请求的数量和平均响应时间。
+ *
+ * @param {string[]} paths 按时间顺序排列的请求路径
+ * @param {number[]} responseTimes 与请求路径一一对应的响应时间
+ * @returns {number[][]} 每组的 [首次出现索引, 连续次数, 平均响应时间]
+ */
+function mergeAdjacentApiLogs(paths, responseTimes) {
+  if (paths.length === 0) return [];
+
+  const result = [];
+  let groupStart = 0;
+  let responseTimeSum = responseTimes[0];
+
+  for (let i = 1; i < paths.length; i++) {
+    if (paths[i] === paths[i - 1]) {
+      responseTimeSum += responseTimes[i];
+      continue;
+    }
+
+    const count = i - groupStart;
+    result.push([groupStart, count, Math.floor(responseTimeSum / count)]);
+    groupStart = i;
+    responseTimeSum = responseTimes[i];
+  }
+
+  const count = paths.length - groupStart;
+  result.push([groupStart, count, Math.floor(responseTimeSum / count)]);
+
+  return result;
+}
+
+console.log(
+  mergeAdjacentApiLogs(
+    ["/api/user", "/api/user", "/api/order", "/api/user", "/api/order", "/api/order"],
+    [100, 200, 150, 300, 250, 350],
+  ),
+); // [[0, 2, 150], [2, 1, 150], [3, 1, 300], [4, 2, 300]]
+
+console.log(
+  mergeAdjacentApiLogs(
+    ["/api/login", "/api/login", "/api/login", "/api/login"],
+    [50, 60, 70, 80],
+  ),
+); // [[0, 4, 65]]
+
+console.log(
+  mergeAdjacentApiLogs(["/api/a", "/api/b", "/api/c"], [100, 200, 300]),
+); // [[0, 1, 100], [1, 1, 200], [2, 1, 300]]
+console.log(mergeAdjacentApiLogs([], [])); // []
+```
+
+按顺序扫描日志，路径发生变化时结算上一组，因此相同路径被其他路径分隔后会分别统计。时间复杂度为 `O(n)`，除输出结果外的额外空间复杂度为 `O(1)`。
+
+## 17. 失灵的键盘
+```javascript
+/**
+ * 根据键盘输出还原按键次数，并按次数降序、原按键字符升序返回。
+ * uu 还原为一次 j，tt 还原为一次 b；其它字符各还原为对应按键。
+ *
+ * @param {string} input 屏幕上输出的字符串，不包含 b 和 j
+ * @returns {number[][]} 每项为 [按键转义值, 按键次数]
+ */
+function analyzeBrokenKeyboard(input) {
+  const counts = new Map();
+
+  for (let index = 0; index < input.length;) {
+    const character = input[index];
+    let key = character;
+
+    if (
+      (character === "u" || character === "t") &&
+      input[index + 1] === character
+    ) {
+      key = character === "u" ? "j" : "b";
+      index += 2;
+    } else {
+      index++;
+    }
+
+    counts.set(key, (counts.get(key) || 0) + 1);
+  }
+
+  return Array.from(counts, ([key, count]) => [key, count])
+    .sort((a, b) => b[1] - a[1] || a[0].charCodeAt(0) - b[0].charCodeAt(0))
+    .map(([key, count]) => {
+      const escapedKey = key >= "0" && key <= "9"
+        ? Number(key)
+        : key.charCodeAt(0) - "a".charCodeAt(0) + 10;
+      return [escapedKey, count];
+    });
+}
+
+console.log(analyzeBrokenKeyboard("t")); // [[29, 1]]
+console.log(analyzeBrokenKeyboard("uuuua")); // [[19, 2], [10, 1]]
+console.log(analyzeBrokenKeyboard("tttt")); // [[11, 2]]，两次按下 b
+console.log(analyzeBrokenKeyboard("a1")); // [[1, 1], [10, 1]]，次数相同按原字符升序
+console.log(analyzeBrokenKeyboard("")); // []
+```
+
+从左到右扫描时，遇到 `uu` 或 `tt` 就消费两个字符并记为一次失灵键；题目约束保证这种贪心解析唯一。排序使用还原后的原按键字符作为次级排序条件，再将按键转换为输出值。时间复杂度为 `O(n + k log k)`，其中 `n` 为字符串长度、`k` 为实际按键种类数；空间复杂度为 `O(k)`。
+
+## 18. 小猫钓鱼
+```javascript
+/**
+ * 模拟两名玩家的小猫钓鱼游戏。
+ * 收牌后按桌面从底到顶的顺序，将整摞牌放到当前玩家手牌队列末尾。
+ *
+ * @param {number[]} playerA 甲的初始牌队列
+ * @param {number[]} playerB 乙的初始牌队列
+ * @returns {number} 获胜方手牌队首牌，或平局时桌面最上方的牌
+ */
+function playCatFishing(playerA, playerB) {
+  // 用数组保存手牌，并用 head 指向下一张待出的牌。
+  // 已出过的牌留在数组前部，不需要每次都 shift 移动剩余元素。
+  const players = [
+    { cards: [...playerA], head: 0 },
+    { cards: [...playerB], head: 0 },
+  ];
+  // 桌面数组从左到右表示从底到顶，最后一个元素就是桌面最上方的牌。
+  let table = [];
+  // 0 表示甲，1 表示乙；收牌后当前玩家继续，未收牌才轮到另一方。
+  let currentPlayer = 0;
+  // 统计已经实际打出的牌数，用于限制模拟步数。
+  let playCount = 0;
+
+  while (true) {
+    const player = players[currentPlayer];
+    const opponent = players[1 - currentPlayer];
+
+    // 游戏结束条件发生在回合开始时，因此先检查当前玩家是否还有牌。
+    if (player.head === player.cards.length) {
+      // 双方都没有手牌时平局；按照题意，桌面有牌则返回桌面顶牌。
+      if (opponent.head === opponent.cards.length) {
+        return table[table.length - 1] ?? 0;
+      }
+      // 当前玩家无牌而对手有牌，对手获胜，返回对手手牌队首。
+      return opponent.cards[opponent.head];
+    }
+
+    // 已完成 10000 次出牌且游戏仍未结束，按平局处理。
+    // 空桌时没有“桌面顶牌”，使用空值合并运算符返回 0。
+    if (playCount === 10000) {
+      return table[table.length - 1] ?? 0;
+    }
+
+    // 取出队首牌：head 前移代表这张牌已从玩家手牌中打出。
+    const card = player.cards[player.head++];
+    playCount++;
+    // 新出的牌放在桌面最上方。
+    table.push(card);
+
+    // -1 表示本次出牌没有触发收牌；否则记录收牌区间的起始下标。
+    let captureStart = -1;
+    if (card === 11 && table.length > 1) {
+      // 11 代表 J。桌面此时至少有一张之前的牌，J 收走整桌，包含刚出的 J。
+      // 先判断 J 特效，因此它不会再按普通同点数规则处理。
+      captureStart = 0;
+    } else if (card !== 11) {
+      // 普通牌从新牌前一张开始向桌底查找，找到最近的同点数牌即停止。
+      // 这样多次出现相同点数时，只收走最近匹配牌到桌面顶部的这一段。
+      for (let index = table.length - 2; index >= 0; index--) {
+        if (table[index] === card) {
+          captureStart = index;
+          break;
+        }
+      }
+    }
+
+    if (captureStart !== -1) {
+      // splice 按桌面由底到顶的顺序取出收牌区间。
+      const capturedCards = table.splice(captureStart);
+      // 整摞牌翻面后成为手牌队列末尾；数组顺序保持不变。
+      player.cards.push(...capturedCards);
+    } else {
+      // 没收牌时轮换出牌方；若刚才收了牌，则 currentPlayer 保持不变。
+      currentPlayer = 1 - currentPlayer;
+    }
+  }
+}
+
+console.log(playCatFishing([1, 2], [10, 12])); // 12，平局时桌面顶牌
+console.log(playCatFishing([1, 2], [1, 2])); // 1，甲获胜时的手牌队首
+console.log(playCatFishing([1, 2, 11, 4], [10, 12, 2, 1])); // 12，甲获胜时的手牌队首
+```
+
+每个玩家用数组和队首索引表示手牌，出牌只移动索引，收牌则将桌面对应部分追加到当前玩家队尾。桌面从左到右表示从底到顶；普通收牌从最近的同点数牌开始，J 在桌面非空时收走整桌牌。令 `T` 为出牌次数上限、`n` 为每位玩家初始牌数，时间复杂度为 `O(Tn)`，空间复杂度为 `O(T + n)`。
